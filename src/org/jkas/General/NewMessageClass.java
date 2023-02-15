@@ -6,11 +6,11 @@ import java.net.http.HttpResponse;
 import java.sql.Timestamp;
 
 public class NewMessageClass {
-    private HttpStatus code;
-    private String message;
-    private Timestamp timestamp;
-    private Integer ttl;
-    private Object data;
+    public HttpStatus code;
+    public String message;
+    public Timestamp timestamp;
+    public Integer ttl;
+    public Object data;
 
     // Constructors
     public NewMessageClass(HttpStatus code, String message){
@@ -18,7 +18,15 @@ public class NewMessageClass {
         this.message = message;
         this.timestamp = new Timestamp(System.currentTimeMillis());
         this.ttl = 1;
-        this.data = new Object();
+        this.data = "";
+    }
+
+    public NewMessageClass(HttpStatus code, String message, Object data){
+        this.code = code;
+        this.message = message;
+        this.timestamp = new Timestamp(System.currentTimeMillis());
+        this.ttl = 1;
+        this.data = data;
     }
 
 }

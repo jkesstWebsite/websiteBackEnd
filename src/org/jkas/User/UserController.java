@@ -35,7 +35,7 @@ public class UserController {
         return targetdb.queryForList("select * from userdb");
     }
 
-    @RequestMapping("/user/register")
+    @RequestMapping(value = "/user/register")
     public NewMessageClass register(@RequestParam("username") String username, @RequestParam("password") String password, @RequestParam("email") String email){
         // Check whether the username is occupied
         String sql = String.format("select * from userdb where username='%s'", username);
@@ -46,11 +46,8 @@ public class UserController {
         if (userList.size() > 0){
             // means there is an existed user in the database
 
-            // 在这里出的错
-            // 我这里写成OK仅仅是为了测试到底是HttpStatus搞的鬼还是其他东西搞的鬼。现在看起来是其他的东西搞的鬼。
-            // 难道是我的HttpStatus用错了，但是理论上也不对啊？
-            // 运行时Warning：Resolved [org.springframework.web.HttpMediaTypeNotAcceptableException: No acceptable representation]
-            return new NewMessageClass(HttpStatus.OK, "The user is already existed");
+            // 问题已解决，GitHub issue #2
+            return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "The user is already existed");
         }
 
         // if not then continue adding the user into the database
