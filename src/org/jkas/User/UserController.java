@@ -19,6 +19,10 @@ public class UserController {
     @Autowired
     private JdbcTemplate targetdb = new JdbcTemplate();
 
+    private Object getValue(List<Map<String, Object>> targetList, String targetKey){
+
+    }
+
     @RequestMapping("/getAllUsers")
     public List<Map<String, Object>> getAllUsers(){
         return targetdb.queryForList("select * from userdb");
@@ -53,5 +57,15 @@ public class UserController {
         }
 
         return returnMessage;
+    }
+
+    @RequestMapping("/login")
+    public MessageClass login(@RequestParam("username") String username, @RequestParam("password") String password){
+        // Check whether the user is in the database
+        String sql = String.format("select * from userdb where username='%s'", username);
+        List<Map<String, Object>> resultList = targetdb.queryForList(sql);
+
+
+        return new MessageClass(true, (String) targetUsername);
     }
 }

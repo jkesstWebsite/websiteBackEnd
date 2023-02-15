@@ -8,12 +8,12 @@ import org.springframework.web.bind.annotation.RestController;
 @EnableAutoConfiguration
 public class ports {
 
-    @RequestMapping("/login")
+    @RequestMapping("/login1")
     public String userLogin(String username, String passwd){
         return "[Login] Username is: " + username + " and the password is " + passwd;
     }
 
-    @RequestMapping("/signup")
+    @RequestMapping("/signup1")
     public String userSignUp(String username, String passwd){
         return "[SignUp] Username is: " + username + " and the password is " + passwd;
     }
