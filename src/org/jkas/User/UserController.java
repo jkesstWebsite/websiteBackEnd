@@ -102,5 +102,25 @@ public class UserController {
         }
     }
 
+    @RequestMapping("/user/deleteUser")
+    public MessageClass deleteUser(@RequestParam("username") String username){
+        // check the user existence
+        Boolean userIsExist = checkUserExistence(username);
+        if (userIsExist){
+            String sql = String.format("delete from userdb where username='%s'", username);
+            int affectLineNum = targetdb.update(sql);
+            // verify process
+            if (affectLineNum != 0){
+                return new MessageClass(true, "User deleted successfully");
+            }
+            else{
+                return new MessageClass(false, "User didn't deleted successfully");
+            }
+        }
+        else{
+            // return that the user does not exist
+            return new MessageClass(false, "User does not exist");
+        }
+    }
 
 }
