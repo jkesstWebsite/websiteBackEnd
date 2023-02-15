@@ -6,7 +6,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.jkas.General.MessageClass;
 import org.jkas.General.NewMessageClass;
 
 import java.util.HashMap;
@@ -46,7 +45,12 @@ public class UserController {
         // Check if the user is existed. If yes then end the session
         if (userList.size() > 0){
             // means there is an existed user in the database
-            return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "The user is already existed");
+
+            // 在这里出的错
+            // 我这里写成OK仅仅是为了测试到底是HttpStatus搞的鬼还是其他东西搞的鬼。现在看起来是其他的东西搞的鬼。
+            // 难道是我的HttpStatus用错了，但是理论上也不对啊？
+            // 运行时Warning：Resolved [org.springframework.web.HttpMediaTypeNotAcceptableException: No acceptable representation]
+            return new NewMessageClass(HttpStatus.OK, "The user is already existed");
         }
 
         // if not then continue adding the user into the database

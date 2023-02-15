@@ -6,11 +6,11 @@ import java.net.http.HttpResponse;
 import java.sql.Timestamp;
 
 public class NewMessageClass {
-    public HttpStatus code;
-    public String message;
-    public Timestamp timestamp;
-    public Integer ttl;
-    public Object data;
+    private HttpStatus code;
+    private String message;
+    private Timestamp timestamp;
+    private Integer ttl;
+    private Object data;
 
     // Constructors
     public NewMessageClass(HttpStatus code, String message){
