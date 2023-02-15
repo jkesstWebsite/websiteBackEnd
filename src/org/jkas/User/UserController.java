@@ -20,7 +20,7 @@ public class UserController {
     private JdbcTemplate targetdb = new JdbcTemplate();
 
     private Object getValue(List<Map<String, Object>> targetList, String targetKey){
-
+        return targetList.get(0).get(targetKey);
     }
 
     @RequestMapping("/getAllUsers")
@@ -64,8 +64,18 @@ public class UserController {
         // Check whether the user is in the database
         String sql = String.format("select * from userdb where username='%s'", username);
         List<Map<String, Object>> resultList = targetdb.queryForList(sql);
+        if (resultList.size() != 0 && resultList.get(0).get("username") == username){
+            // check the password for the user
+            if (resultList.get(0).get("password") == password){
+                return new MessageClass(true, "You have been logged in successfully");
+            }
+            else{
+                return new MessageClass(false, "Username and password does not match");
+            }
+        }
+        else{
+            return new MessageClass(false, "User does not exist. Please sign up first");
+        }
 
-
-        return new MessageClass(true, (String) targetUsername);
     }
 }
