@@ -170,7 +170,8 @@ public class UserController {
     public NewMessageClass modifyUsername(@RequestParam("oldUsername") String username, @RequestParam("newUsername") String newUsername){
         // check existence
         Boolean result = checkUserExistence(username);
-        if (result){
+        Boolean newNameExist = checkUserExistence(newUsername);
+        if (result && !newNameExist){
             // try to modify the username
             String sql = String.format("update userdb set username='%s' where username='%s'", newUsername, username);
             int affectRows = targetdb.update(sql);
@@ -183,7 +184,7 @@ public class UserController {
             }
         }
         else{
-            return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "User not found");
+            return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "User not found or name has been taken");
         }
     }
 
