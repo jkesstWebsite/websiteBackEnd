@@ -3,3 +3,9 @@ spring:
     url: jdbc:mysql://localhost:90/webenddb
     username: root
     password: "070401"
+
+config:
+  jwt:
+    token: IAmCool
+    expire: 3600
+    header: token
