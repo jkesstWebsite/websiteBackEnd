@@ -166,4 +166,54 @@ public class UserController {
         }
     }
 
+    @RequestMapping("/user/modifyUsername")
+    public NewMessageClass modifyUsername(@RequestParam("oldUsername") String username, @RequestParam("newUsername") String newUsername){
+        // check existence
+        Boolean result = checkUserExistence(username);
+        if (result){
+            // try to modify the username
+            String sql = String.format("update userdb set username='%s' where username='%s'", newUsername, username);
+            int affectRows = targetdb.update(sql);
+            // verify the process
+            if (affectRows != 0){
+                return new NewMessageClass(HttpStatus.OK, "Username changed successfully");
+            }
+            else{
+                return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "Username changed unsuccessfully");
+            }
+        }
+        else{
+            return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "User not found");
+        }
+    }
+
+    @RequestMapping("/user/modifyPassword")
+    public NewMessageClass modifyPassword(@RequestParam("username") String username, @RequestParam("oldPassword") String password, @RequestParam("newPassword") String newPassword){
+        // check existence and password
+        Boolean result = checkUserExistence(username);
+        if (result){
+            String passwdSql = String.format("select * from userdb where username='%s'", username);
+            List<Map<String, Object>> targetResult = targetdb.queryForList(passwdSql);
+            // verify password
+            if (targetResult.get(0).get("password").toString().equals(password)){
+                // modify the password
+                passwdSql = String.format("update userdb set password='%s' where username='%s'", newPassword, username);
+                int affectRows = targetdb.update(passwdSql);
+                // verify process
+                if (affectRows != 0){
+                    return new NewMessageClass(HttpStatus.OK, "Password modified successfully");
+                }
+                else{
+                    return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "Password modified unsuccessfully");
+                }
+            }
+            else{
+                return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "Password verification failed");
+            }
+        }
+        else{
+            return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "User does not exist");
+        }
+    }
+
 }
