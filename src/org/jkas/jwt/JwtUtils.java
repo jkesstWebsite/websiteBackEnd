@@ -10,7 +10,7 @@ import java.util.UUID;
 public class JwtUtils {
 
     private final static String signature = "iamcool";
-    private final static long time = 1000*60*60*24*30; // provide a time with 30 days expire
+    private final static long time = 1000L *60*60*24*30; // provide a time with 30 days expire
 
     public static String createToken(Map<String, Object> userInfo){
         JwtBuilder jwtBuilder = Jwts.builder();
@@ -39,19 +39,23 @@ public class JwtUtils {
 
     public static Boolean checkIsExpired(String token){
         try{
-            Claims targetClaim = Jwts.parser().setSigningKey(signature).parseClaimsJws(token).getBody();
-            return true;
+            Date tokenExpireDate = Jwts.parser().setSigningKey(signature).parseClaimsJws(token).getBody().getExpiration();
+            return tokenExpireDate.before(new Date());
         }
-        catch (ExpiredJwtException expireException){
+        catch (ExpiredJwtException e){
+
             return false;
+
         }
     }
 
     public static Map<String, Object> getClaims(String token){
         // check whether the token is expired
         Boolean result = checkIsExpired(token);
-        if (result){
+        if (!result){
             // TODO: get the info from the token
+            Map<String, Object> targetInfo = Jwts.parser().setSigningKey(signature).parseClaimsJws(token).getBody();
+            return targetInfo;
         }
         else{
             Map<String, Object> returnInfo = new HashMap<>();
