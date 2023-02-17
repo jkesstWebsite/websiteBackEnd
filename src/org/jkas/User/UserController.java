@@ -4,6 +4,7 @@ import org.jkas.jwt.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -218,6 +219,11 @@ public class UserController {
         else{
             return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "User does not exist");
         }
+    }
+
+    @RequestMapping("/exception")
+    public NewMessageClass exceptionTest(@RequestParam("username") String username, @RequestHeader("Authorization") String token){
+        return new NewMessageClass(HttpStatus.OK, "Test passed");
     }
 
 }
