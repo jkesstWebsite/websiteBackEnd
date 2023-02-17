@@ -6,6 +6,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 public class BlockerConfig implements WebMvcConfigurer {
@@ -16,8 +17,8 @@ public class BlockerConfig implements WebMvcConfigurer {
         LoginInterceptor loginInterceptor = new LoginInterceptor();
 
         // Register paths here
-        ArrayList<String> includePaths = InterceptPathsConfig.includePaths;
-        ArrayList<String> excludePaths = InterceptPathsConfig.excludePaths;
+        List<String> includePaths = InterceptPathsConfig.includePaths;
+        List<String> excludePaths = InterceptPathsConfig.excludePaths;
 
 
         // Register interceptors here

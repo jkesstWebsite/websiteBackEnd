@@ -3,7 +3,6 @@ package org.jkas.Interceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.jkas.Config.TokenPathsConfig;
-import org.jkas.General.NewMessageClass;
 import org.jkas.jwt.JwtUtils;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
@@ -11,6 +10,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.List;
 
 public class LoginInterceptor implements HandlerInterceptor {
 
@@ -30,8 +30,8 @@ public class LoginInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception{
         // Check the target location needs the token to continue
         String uri = request.getRequestURI();
-        ArrayList<String> needLoginPaths = TokenPathsConfig.includePaths;
-        ArrayList<String> noNeedLoginPaths = TokenPathsConfig.excludePaths;
+        List<String> needLoginPaths = TokenPathsConfig.includePaths;
+        List<String> noNeedLoginPaths = TokenPathsConfig.excludePaths;
 
         System.out.println(uri);
         System.out.println(noNeedLoginPaths.contains(uri));
