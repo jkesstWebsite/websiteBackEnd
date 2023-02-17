@@ -1,5 +1,6 @@
 package org.jkas.User;
 
+import org.jkas.jwt.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -71,14 +72,16 @@ public class UserController {
         if (resultList.size() != 0 && resultList.get(0).get("username").equals(username)){
             // check the password for the user
             if (resultList.get(0).get("password").equals(password) && (int)resultList.get(0).get("status") == 1){
-                return new NewMessageClass(HttpStatus.OK, "You have been logged in successfully");
+                // create the user info map to generate token
+                Map<String, Object> userInfo = resultList.get(0);
+                return new NewMessageClass(HttpStatus.OK, "You have been logged in successfully", JwtUtils.createToken(userInfo));
             }
             else{
                 return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "Username and password does not match");
             }
         }
         else{
-            return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, resultList.toString());
+            return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "Error");
         }
     }
 
