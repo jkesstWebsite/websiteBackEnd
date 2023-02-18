@@ -1,4 +1,4 @@
-package org.jkas.jwt;
+package main.jkas.jwt;
 
 import java.util.HashMap;
 import java.util.Map;

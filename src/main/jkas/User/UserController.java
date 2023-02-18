@@ -1,6 +1,6 @@
-package org.jkas.User;
+package main.jkas.User;
 
-import org.jkas.jwt.JwtUtils;
+import main.jkas.jwt.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.jkas.General.NewMessageClass;
+import main.jkas.General.NewMessageClass;
 
 import java.util.HashMap;
 import java.util.List;

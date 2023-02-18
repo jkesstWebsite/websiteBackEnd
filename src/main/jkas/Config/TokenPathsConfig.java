@@ -1,4 +1,4 @@
-package org.jkas.Config;
+package main.jkas.Config;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -1,11 +1,10 @@
-package org.jkas.Config;
+package main.jkas.Config;
 
-import org.jkas.Interceptor.LoginInterceptor;
+import main.jkas.Interceptor.LoginInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Configuration

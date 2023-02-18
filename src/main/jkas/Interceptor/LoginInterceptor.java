@@ -1,15 +1,14 @@
-package org.jkas.Interceptor;
+package main.jkas.Interceptor;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.jkas.Config.TokenPathsConfig;
-import org.jkas.jwt.JwtUtils;
+import main.jkas.Config.TokenPathsConfig;
+import main.jkas.jwt.JwtUtils;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 
 public class LoginInterceptor implements HandlerInterceptor {

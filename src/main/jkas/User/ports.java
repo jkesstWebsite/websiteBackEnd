@@ -1,4 +1,4 @@
-package org.jkas.User;
+package main.jkas.User;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.RequestMapping;
