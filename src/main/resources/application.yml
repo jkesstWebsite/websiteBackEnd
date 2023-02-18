@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:90/webenddb
+    url: jdbc:mysql://localhost:3306
     username: root
-    password: "070401"
+    password: "1001"
 
 config:
   jwt:

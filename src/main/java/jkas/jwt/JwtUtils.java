@@ -1,4 +1,4 @@
-package main.jkas.jwt;
+package jkas.jwt;
 
 import io.jsonwebtoken.*;
 
@@ -37,6 +37,12 @@ public class JwtUtils {
         return targetToken;
     }
 
+
+    /**
+     * Check if token expired
+     * @param token
+     * @return true if token is not expired, false if expired
+     */
     public static Boolean checkIsExpired(String token){
         try{
             Date tokenExpireDate = Jwts.parser().setSigningKey(signature).parseClaimsJws(token).getBody().getExpiration();
@@ -49,21 +55,23 @@ public class JwtUtils {
 
     public static Map<String, Object> getClaims(String token){
         // check whether the token is expired
-        Boolean result = checkIsExpired(token);
-        if (result == true || token.equals("") == false){
-            // TODO: get the info from the token
-            try {
-                System.out.println(token);
-                Map<String, Object> targetInfo = Jwts.parser().setSigningKey(signature).parseClaimsJws(token).getBody();
-                return targetInfo;
-            }
-            catch (IllegalArgumentException | MalformedJwtException e){
-                Map<String, Object> returnInfo = new HashMap<>();
-                returnInfo.put("Warning", "tokenExpired");
-                return returnInfo;
-            }
+
+        //TODO: 添加一个token is valid 方法，检验是否valid。checkisexpired方法应该返回false如果没有expired，返回值与方法保持一致
+        if (!checkIsExpired(token) || token.equals("") != false){
+
+            Map<String, Object> returnInfo = new HashMap<>();
+            returnInfo.put("Warning", "tokenExpired");
+            return returnInfo;
         }
-        else{
+
+
+        // TODO: get the info from the token
+        try {
+            System.out.println(token);
+            Map<String, Object> targetInfo = Jwts.parser().setSigningKey(signature).parseClaimsJws(token).getBody();
+            return targetInfo;
+        }
+        catch (IllegalArgumentException | MalformedJwtException e){
             Map<String, Object> returnInfo = new HashMap<>();
             returnInfo.put("Warning", "tokenExpired");
             return returnInfo;

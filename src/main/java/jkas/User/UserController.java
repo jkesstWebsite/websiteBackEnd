@@ -1,6 +1,6 @@
-package main.jkas.User;
+package jkas.User;
 
-import main.jkas.jwt.JwtUtils;
+import jkas.jwt.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import main.jkas.General.NewMessageClass;
+import jkas.General.NewMessageClass;
 
 import java.util.HashMap;
 import java.util.List;
@@ -71,25 +71,26 @@ public class UserController {
 
     }
 
+    //TODO: 减少使用 if 和else， 改成下面的样子。全局的代码都应该这么优化保证简洁性。
     @RequestMapping("/user/login")
     public NewMessageClass login(@RequestParam("username") String username, @RequestParam("password") String password){
         // Check whether the user is in the database
         String sql = String.format("select * from userdb where username='%s'", username);
         List<Map<String, Object>> resultList = targetdb.queryForList(sql);
-        if (resultList.size() != 0 && resultList.get(0).get("username").equals(username)){
-            // check the password for the user
-            if (resultList.get(0).get("password").equals(password) && (int)resultList.get(0).get("status") == 1){
-                // create the user info map to generate token
-                Map<String, Object> userInfo = resultList.get(0);
-                return new NewMessageClass(HttpStatus.OK, "You have been logged in successfully", JwtUtils.createToken(userInfo));
-            }
-            else{
-                return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "Username and password does not match");
-            }
-        }
-        else{
+
+        if (resultList.size() == 0 || !resultList.get(0).get("username").equals(username)){
             return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "Error");
         }
+
+        if (!resultList.get(0).get("password").equals(password) || (int)resultList.get(0).get("status") != 1){
+            return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "Username and password does not match");
+
+        }
+
+        // create the user info map to generate token
+        Map<String, Object> userInfo = resultList.get(0);
+        return new NewMessageClass(HttpStatus.OK, "You have been logged in successfully", JwtUtils.createToken(userInfo));
+
     }
 
     @RequestMapping("/user/changeUserStatus")
@@ -98,19 +99,17 @@ public class UserController {
         String username = getUsername(token);
         // find this user is in the database
         Boolean result = checkUserExistence(username);
-        if (result){
-            String sql = String.format("update userdb set status=%s where username='%s'", status, username);
-            int processResult = targetdb.update(sql);
-            if (processResult == 1){
-                return new NewMessageClass(HttpStatus.OK, "User status updated successfully");
-            }
-            else{
-                return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "User status modification failed");
-            }
-        }
-        else{
+        if (!result){
             return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "User does not exist");
         }
+
+        String sql = String.format("update userdb set status=%s where username='%s'", status, username);
+        int processResult = targetdb.update(sql);
+
+        if (processResult != 1){
+            return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "User status modification failed");
+        }
+        return new NewMessageClass(HttpStatus.OK, "User status updated successfully");
     }
 
     @RequestMapping("/user/deleteUser")

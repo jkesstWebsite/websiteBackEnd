@@ -1,4 +1,4 @@
-package main.jkas.General;
+package jkas.General;
 
 import org.springframework.http.HttpStatus;
 
