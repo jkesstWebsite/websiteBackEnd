@@ -12,7 +12,7 @@ import java.util.List;
 public class BlockerConfig implements WebMvcConfigurer {
 
     @Override
-    public void addInterceptors(InterceptorRegistry interceptorRegistry){
+    public void addInterceptors(@org.jetbrains.annotations.NotNull InterceptorRegistry interceptorRegistry){
         // Create instantiates of the interceptors here
         LoginInterceptor loginInterceptor = new LoginInterceptor();
 

@@ -57,6 +57,9 @@ public class LoginInterceptor implements HandlerInterceptor {
                 }
                 else{
                     // out dated token
+                    System.out.println(" System blocked 1 illegal request");
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    response.getWriter().append(generateRespondBody(HttpStatus.INTERNAL_SERVER_ERROR, "Invalid token"));
                     return false;
                 }
             }

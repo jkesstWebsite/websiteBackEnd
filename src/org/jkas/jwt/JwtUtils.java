@@ -42,20 +42,26 @@ public class JwtUtils {
             Date tokenExpireDate = Jwts.parser().setSigningKey(signature).parseClaimsJws(token).getBody().getExpiration();
             return tokenExpireDate.before(new Date());
         }
-        catch (ExpiredJwtException e){
-
+        catch (ExpiredJwtException | IllegalArgumentException e){
             return false;
-
         }
     }
 
     public static Map<String, Object> getClaims(String token){
         // check whether the token is expired
         Boolean result = checkIsExpired(token);
-        if (!result){
+        if (result == true || token.equals("") == false){
             // TODO: get the info from the token
-            Map<String, Object> targetInfo = Jwts.parser().setSigningKey(signature).parseClaimsJws(token).getBody();
-            return targetInfo;
+            try {
+                System.out.println(token);
+                Map<String, Object> targetInfo = Jwts.parser().setSigningKey(signature).parseClaimsJws(token).getBody();
+                return targetInfo;
+            }
+            catch (IllegalArgumentException | MalformedJwtException e){
+                Map<String, Object> returnInfo = new HashMap<>();
+                returnInfo.put("Warning", "tokenExpired");
+                return returnInfo;
+            }
         }
         else{
             Map<String, Object> returnInfo = new HashMap<>();
