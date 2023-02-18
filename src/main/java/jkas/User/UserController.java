@@ -38,6 +38,12 @@ public class UserController {
         return username;
     }
 
+    private String getPassword(String token){
+        Map<String, Object> userInfo = JwtUtils.getClaims(token);
+        String password = userInfo.get("password").toString();
+        return password;
+    }
+
     @RequestMapping("/user/getAllUsers")
     public List<Map<String, Object>> getAllUsers(){
         return targetdb.queryForList("select * from userdb");
@@ -118,20 +124,17 @@ public class UserController {
         String username = getUsername(token);
         // check the user existence
         Boolean userIsExist = checkUserExistence(username);
-        if (userIsExist){
-            String sql = String.format("delete from userdb where username='%s'", username);
-            int affectLineNum = targetdb.update(sql);
-            // verify process
-            if (affectLineNum != 0){
-                return new NewMessageClass(HttpStatus.OK, "User deleted successfully");
-            }
-            else{
-                return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "User didn't deleted successfully");
-            }
+        if (!userIsExist){
+            return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "User does not exist");
+        }
+        String sql = String.format("delete from userdb where username='%s'", username);
+        int affectRows = targetdb.update(sql);
+        if (affectRows != 0){
+            // success
+            return new NewMessageClass(HttpStatus.OK, "User deleted successfully");
         }
         else{
-            // return that the user does not exist
-            return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "User does not exist");
+            return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "Database error");
         }
     }
 
@@ -141,21 +144,19 @@ public class UserController {
         String username = getUsername(token);
         // check user existence
         Boolean userIsExisted = checkUserExistence(username);
-        if (userIsExisted){
-            // get the password from the database
-            String sql = String.format("select * from userdb where username='%s'", username);
-            List<Map<String, Object>> result = targetdb.queryForList(sql);
-            // Compare the data and return the result
-            if (userInputPassword.equals(result.get(0).get("password"))){
-                return new NewMessageClass(HttpStatus.OK, "Password is correct");
-            }
-            else{
-                return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "Password is incorrect");
-            }
-        }
-        else{
+        if (!userIsExisted){
             return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "User does not exist");
         }
+        String sql = String.format("select password from userdb where username='%s'", username);
+        List<Map<String, Object>> dbResult = targetdb.queryForList(sql);
+        String dbPassword = dbResult.get(0).get("password").toString();
+        if (dbPassword.equals(userInputPassword)){
+            return new NewMessageClass(HttpStatus.OK, "Password match.");
+        }
+        else{
+            return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "Password does not match");
+        }
+
     }
 
     @RequestMapping("/user/getUserInfo")
@@ -190,23 +191,22 @@ public class UserController {
         // check existence
         Boolean result = checkUserExistence(username);
         Boolean newNameExist = checkUserExistence(newUsername);
-        if (result && !newNameExist){
-            // try to modify the username
-            String sql = String.format("update userdb set username='%s' where username='%s'", newUsername, username);
-            int affectRows = targetdb.update(sql);
-            // verify the process
-            if (affectRows != 0){
-                // if okay then return the result and the new token
-                List<Map<String, Object>> userInfo = targetdb.queryForList(String.format("select * from userdb where username='%s'", newUsername));
-                String newToken = JwtUtils.createToken(userInfo.get(0));
-                return new NewMessageClass(HttpStatus.OK, "Username changed successfully", newToken);
-            }
-            else{
-                return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "Username changed unsuccessfully");
-            }
+        if (!result){
+            return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "Target user does not exist");
+        }
+        if (newNameExist){
+            return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "Username already existed");
+        }
+        String sql = String.format("update userdb set username='%s' where username='%s'", newUsername, username);
+        int affectRows = targetdb.update(sql);
+        if (affectRows != 0){
+            // generate new token
+            List<Map<String, Object>> userInfo = targetdb.queryForList(String.format("select * from userdb where username='%s'", newUsername));
+            String newToken = JwtUtils.createToken(userInfo.get(0));
+            return new NewMessageClass(HttpStatus.OK, "Username updated successfully", newToken);
         }
         else{
-            return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "User not found or name has been taken");
+            return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "Database error");
         }
     }
 
@@ -216,33 +216,24 @@ public class UserController {
         String username = getUsername(token);
         // check existence and password
         Boolean result = checkUserExistence(username);
-        if (result){
-            String passwdSql = String.format("select * from userdb where username='%s'", username);
-            List<Map<String, Object>> targetResult = targetdb.queryForList(passwdSql);
-            // verify password
-            if (targetResult.get(0).get("password").toString().equals(password)){
-                // modify the password
-                passwdSql = String.format("update userdb set password='%s' where username='%s'", newPassword, username);
-                int affectRows = targetdb.update(passwdSql);
-                // verify process
-                if (affectRows != 0){
-                    // if success then generate a new token for the user
-                    List<Map<String, Object>> userInfo = targetdb.queryForList(String.format("select * from userdb where username='%s'", username));
-                    String newToken = JwtUtils.createToken(userInfo.get(0));
-                    return new NewMessageClass(HttpStatus.OK, "Password modified successfully", newToken);
-                }
-                else{
-                    return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "Password modified unsuccessfully");
-                }
-            }
-            else{
-                return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "Password verification failed");
-            }
-        }
-        else{
+        if (!result){
             return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "User does not exist");
         }
+        String currentPassword = getPassword(token);
+        if (!currentPassword.equals(password)){
+            return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "Password verification failed");
+        }
+        String sql = String.format("update userdb set password='%s' where username='%s'", newPassword, username);
+        int affectRows = targetdb.update(sql);
+        if (affectRows != 0){
+            // get current user info
+            List<Map<String, Object>> userInfo = targetdb.queryForList(String.format("select * from userdb where username='%s'", username));
+            String newToken = JwtUtils.createToken(userInfo.get(0));
+            return new NewMessageClass(HttpStatus.OK, "Password modified successfully", newToken);
+        }
+        else{
+            return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "Database error");
+        }
+
     }
-
-
 }
