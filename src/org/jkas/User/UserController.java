@@ -32,6 +32,12 @@ public class UserController {
         }
     }
 
+    private String getUsername(String token){
+        Map<String, Object> userInfo = JwtUtils.getClaims(token);
+        String username = userInfo.get("username").toString();
+        return username;
+    }
+
     @RequestMapping("/user/getAllUsers")
     public List<Map<String, Object>> getAllUsers(){
         return targetdb.queryForList("select * from userdb");
@@ -87,7 +93,9 @@ public class UserController {
     }
 
     @RequestMapping("/user/changeUserStatus")
-    public NewMessageClass changeUserStatus(@RequestParam("username") String username, @RequestParam("status") Integer status){
+    public NewMessageClass changeUserStatus(@RequestHeader("Authorization") String token, @RequestParam("status") Integer status){
+        // Get the username from the token
+        String username = getUsername(token);
         // find this user is in the database
         Boolean result = checkUserExistence(username);
         if (result){
@@ -106,7 +114,9 @@ public class UserController {
     }
 
     @RequestMapping("/user/deleteUser")
-    public NewMessageClass deleteUser(@RequestParam("username") String username){
+    public NewMessageClass deleteUser(@RequestHeader("Authorization") String token){
+        // get the target username
+        String username = getUsername(token);
         // check the user existence
         Boolean userIsExist = checkUserExistence(username);
         if (userIsExist){
@@ -127,7 +137,9 @@ public class UserController {
     }
 
     @RequestMapping("/user/checkPassword")
-    public NewMessageClass checkUserPassword(@RequestParam("username") String username, @RequestParam("password") String userInputPassword){
+    public NewMessageClass checkUserPassword(@RequestHeader("Authorization") String token, @RequestParam("password") String userInputPassword){
+        // get the target username
+        String username = getUsername(token);
         // check user existence
         Boolean userIsExisted = checkUserExistence(username);
         if (userIsExisted){
@@ -148,7 +160,9 @@ public class UserController {
     }
 
     @RequestMapping("/user/getUserInfo")
-    public Map<String, Object> returnUserInfo(@RequestParam("username") String username){
+    public Map<String, Object> returnUserInfo(@RequestHeader("Authorization") String token){
+        // get the target username
+        String username = getUsername(token);
         // check user existence
         Boolean existResult = checkUserExistence(username);
         if (existResult){
@@ -171,7 +185,9 @@ public class UserController {
     }
 
     @RequestMapping("/user/modifyUsername")
-    public NewMessageClass modifyUsername(@RequestParam("oldUsername") String username, @RequestParam("newUsername") String newUsername){
+    public NewMessageClass modifyUsername(@RequestHeader("Authorization") String token, @RequestParam("newUsername") String newUsername){
+        // get the target username
+        String username = getUsername(token);
         // check existence
         Boolean result = checkUserExistence(username);
         Boolean newNameExist = checkUserExistence(newUsername);
@@ -181,7 +197,10 @@ public class UserController {
             int affectRows = targetdb.update(sql);
             // verify the process
             if (affectRows != 0){
-                return new NewMessageClass(HttpStatus.OK, "Username changed successfully");
+                // if okay then return the result and the new token
+                List<Map<String, Object>> userInfo = targetdb.queryForList(String.format("select * from userdb where username='%s'", newUsername));
+                String newToken = JwtUtils.createToken(userInfo.get(0));
+                return new NewMessageClass(HttpStatus.OK, "Username changed successfully", newToken);
             }
             else{
                 return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "Username changed unsuccessfully");
@@ -193,7 +212,9 @@ public class UserController {
     }
 
     @RequestMapping("/user/modifyPassword")
-    public NewMessageClass modifyPassword(@RequestParam("username") String username, @RequestParam("oldPassword") String password, @RequestParam("newPassword") String newPassword){
+    public NewMessageClass modifyPassword(@RequestHeader("Authorization") String token, @RequestParam("oldPassword") String password, @RequestParam("newPassword") String newPassword){
+        // get the target username
+        String username = getUsername(token);
         // check existence and password
         Boolean result = checkUserExistence(username);
         if (result){
@@ -206,7 +227,10 @@ public class UserController {
                 int affectRows = targetdb.update(passwdSql);
                 // verify process
                 if (affectRows != 0){
-                    return new NewMessageClass(HttpStatus.OK, "Password modified successfully");
+                    // if success then generate a new token for the user
+                    List<Map<String, Object>> userInfo = targetdb.queryForList(String.format("select * from userdb where username='%s'", username));
+                    String newToken = JwtUtils.createToken(userInfo.get(0));
+                    return new NewMessageClass(HttpStatus.OK, "Password modified successfully", newToken);
                 }
                 else{
                     return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "Password modified unsuccessfully");
@@ -221,9 +245,5 @@ public class UserController {
         }
     }
 
-    @RequestMapping("/exception")
-    public NewMessageClass exceptionTest(@RequestParam("username") String username, @RequestHeader("Authorization") String token){
-        return new NewMessageClass(HttpStatus.OK, "Test passed");
-    }
 
 }

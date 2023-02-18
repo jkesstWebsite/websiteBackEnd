@@ -33,8 +33,12 @@ public class LoginInterceptor implements HandlerInterceptor {
         List<String> needLoginPaths = TokenPathsConfig.includePaths;
         List<String> noNeedLoginPaths = TokenPathsConfig.excludePaths;
 
-        System.out.println(uri);
-        System.out.println(noNeedLoginPaths.contains(uri));
+        // pass the POTION request
+        if (request.getMethod().equals("OPTION")){
+            response.setStatus(HttpServletResponse.SC_OK);
+            return true;
+        }
+
         // Verify token
         if (noNeedLoginPaths.contains(uri)){
             System.out.println("A port do not need to login with the token");
