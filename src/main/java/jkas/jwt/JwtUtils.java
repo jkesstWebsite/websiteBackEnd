@@ -46,9 +46,19 @@ public class JwtUtils {
     public static Boolean checkIsExpired(String token){
         try{
             Date tokenExpireDate = Jwts.parser().setSigningKey(signature).parseClaimsJws(token).getBody().getExpiration();
-            return tokenExpireDate.before(new Date());
+            return false;
         }
         catch (ExpiredJwtException | IllegalArgumentException e){
+            return true;
+        }
+    }
+
+    public static Boolean checkIsValid(String token){
+        try{
+            Claims content = Jwts.parser().setSigningKey(signature).parseClaimsJws(token).getBody();
+            return true;
+        }
+        catch (MalformedJwtException e){
             return false;
         }
     }
@@ -57,7 +67,7 @@ public class JwtUtils {
         // check whether the token is expired
 
         //TODO: 添加一个token is valid 方法，检验是否valid。checkisexpired方法应该返回false如果没有expired，返回值与方法保持一致
-        if (!checkIsExpired(token) || token.equals("") != false){
+        if (checkIsExpired(token) || !checkIsValid(token)){
 
             Map<String, Object> returnInfo = new HashMap<>();
             returnInfo.put("Warning", "tokenExpired");
@@ -67,7 +77,7 @@ public class JwtUtils {
 
         // TODO: get the info from the token
         try {
-            System.out.println(token);
+            // System.out.println(token);
             Map<String, Object> targetInfo = Jwts.parser().setSigningKey(signature).parseClaimsJws(token).getBody();
             return targetInfo;
         }

@@ -1,11 +1,11 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306
+    url: jdbc:mysql://localhost:90 #localhost:3306
     username: root
-    password: "1001"
+    password: "070401"
 
 config:
   jwt:
     token: IAmCool
     expire: 3600
-    header: token
+    header: tokenks
