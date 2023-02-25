@@ -6,9 +6,10 @@ import java.util.List;
 
 public class InterceptPathsConfig {
 
+    // login interceptor paths configurations
     public static List<String> includePaths = Arrays.asList(
             "/user/**",
-            ""
+            "/passage/editor/util"
     );
     public static List<String> excludePaths = Arrays.asList(
             "/user/register",
