@@ -9,22 +9,30 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.sql.DataSource;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import jkas.Passage.PassageController;
 
-@ServerEndpoint("/passage/editor/util")
+@ServerEndpoint("/passage/editor/util/{userToken}")
+@Component
 public class PassageEditor {
 
     private Session session;
     private String username;
     private String userID;
     private static ConcurrentMap<String, Session> clients = new ConcurrentHashMap<>();
+
     @Autowired
     private JdbcTemplate targetdb = new JdbcTemplate();
+
+    private PassageController passageController = new PassageController();
 
     // Util methods
     private String getUsername(String token){
@@ -55,28 +63,6 @@ public class PassageEditor {
         }
         catch (Exception e){
             System.out.println("An error occured while sending the message");
-        }
-    }
-
-    public Boolean createPassage(String userid, String title, String content){
-        String sql = String.format("insert into passagedb (title, authorid, date, visible, content) values (%s, %s, %s, %s, %s)", title, userid, LocalDateTime.now(), 1, content);
-        int affectRowNum = targetdb.update(sql);
-        if (affectRowNum > 0){
-            return true;
-        }
-        else{
-            return false;
-        }
-    }
-
-    public Boolean modifyPassage(String title, String content, String passageID){
-        String sql = String.format("update passagedb set content='%s' title='%s' where passageid='%s'", content, title, passageID);
-        int affectRowNum = targetdb.update(sql);
-        if (affectRowNum > 0){
-            return true;
-        }
-        else{
-            return false;
         }
     }
 
@@ -116,25 +102,15 @@ public class PassageEditor {
         System.out.println("Receive a message from the client");
         JSONObject message = new JSONObject(originMessage);
         // identify the type of the process
-        if (message.get("type") == "new"){
+        if (message.get("type").toString().equals("new")){
             // create new passage in the system
-            Boolean result = createPassage(this.userID, message.get("title").toString(), message.get("content").toString());
-            if (result){
-                sendSingleMessage(this.username, "true");
-            }
-            else{
-                sendSingleMessage(this.username, "false");
-            }
+            Boolean result = passageController.createPassage(this.userID, message.get("title").toString(), message.get("content").toString());
+            sendSingleMessage(this.username, result.toString());
         }
         else{
             // modify the passage, need passageID
-            Boolean result = modifyPassage(message.get("title").toString(), message.get("content").toString(), message.get("id").toString());
-            if (result){
-                sendSingleMessage(this.username, "true");
-            }
-            else{
-                sendSingleMessage(this.username, "false");
-            }
+            Boolean result = passageController.modifyPassage(message.get("title").toString(), message.get("content").toString(), message.get("id").toString());
+            sendSingleMessage(this.username, result.toString());
         }
     }
 

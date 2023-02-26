@@ -1,8 +1,9 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:90 #localhost:3306
+    url: jdbc:mysql://localhost:90/webenddb #localhost:3306
     username: root
     password: "070401"
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
 config:
   jwt:
