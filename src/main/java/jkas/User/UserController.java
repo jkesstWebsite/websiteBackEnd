@@ -184,6 +184,18 @@ public class UserController {
         }
     }
 
+    @RequestMapping("/user/getUserInfoByID")
+    public NewMessageClass returnUserInfoByID(@RequestParam("userID")String userID){
+        try{
+            String sql = String.format("select * from userdb where id=%s", userID);
+            List<Map<String, Object>> result = targetdb.queryForList(sql);
+            return new NewMessageClass(HttpStatus.OK, "Target user found", result.get(0));
+        }
+        catch (Exception e){
+            return new NewMessageClass(HttpStatus.NOT_FOUND, "Target user does not exist");
+        }
+    }
+
     @RequestMapping("/user/modifyUsername")
     public NewMessageClass modifyUsername(@RequestHeader("Authorization") String token, @RequestParam("newUsername") String newUsername){
         // get the target username
