@@ -3,22 +3,15 @@ package jkas.Passage;
 import jakarta.websocket.*;
 import jakarta.websocket.server.PathParam;
 import jakarta.websocket.server.ServerEndpoint;
-import jkas.General.NewMessageClass;
 import jkas.jwt.JwtUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestParam;
-
-import javax.sql.DataSource;
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import jkas.Passage.PassageController;
+
 
 @ServerEndpoint("/passage/editor/util/{userToken}")
 @Component
@@ -107,10 +100,18 @@ public class PassageEditor {
             Boolean result = passageController.createPassage(this.userID, message.get("title").toString(), message.get("content").toString());
             sendSingleMessage(this.username, result.toString());
         }
-        else{
+        else if (message.get("type").toString().equals("modify")){
             // modify the passage, need passageID
             Boolean result = passageController.modifyPassage(message.get("title").toString(), message.get("content").toString(), message.get("id").toString());
             sendSingleMessage(this.username, result.toString());
+        }
+        else if (message.get("type").toString().equals("delete")){
+            // delete
+            Boolean result = passageController.deletePassage(message.get("id").toString());
+            sendSingleMessage(this.username, result.toString());
+        }
+        else{
+            sendSingleMessage(this.username, "false");
         }
     }
 
