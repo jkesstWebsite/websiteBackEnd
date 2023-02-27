@@ -50,9 +50,8 @@ public class PassageController {
 
     public Boolean createPassage(String userid, String title, String content){
         String sql = String.format("insert into passagedb (title, authorid, date, visible, content) values ('%s', %s, '%s', %s, '%s')", title, userid, LocalDateTime.now(), 1, content);
-        System.out.println(sql);
         JdbcTemplate targetdb = new JdbcTemplate(returnDataSource());
-        int affectRowNum = targetdb.update(sql); // 这里报错
+        int affectRowNum = targetdb.update(sql);
         return affectRowNum > 0;
     }
 
