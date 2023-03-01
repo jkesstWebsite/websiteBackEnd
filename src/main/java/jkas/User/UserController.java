@@ -145,16 +145,16 @@ public class UserController {
         // check user existence
         Boolean userIsExisted = checkUserExistence(username);
         if (!userIsExisted){
-            return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "User does not exist");
+            return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "User does not exist", false);
         }
         String sql = String.format("select password from userdb where username='%s'", username);
         List<Map<String, Object>> dbResult = targetdb.queryForList(sql);
         String dbPassword = dbResult.get(0).get("password").toString();
         if (dbPassword.equals(userInputPassword)){
-            return new NewMessageClass(HttpStatus.OK, "Password match.");
+            return new NewMessageClass(HttpStatus.OK, "Password match.", true);
         }
         else{
-            return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "Password does not match");
+            return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "Password does not match", false);
         }
 
     }
