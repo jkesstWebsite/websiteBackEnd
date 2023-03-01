@@ -5,17 +5,16 @@ import jkas.General.BaseConfig;
 import jkas.General.NewMessageClass;
 import jkas.jwt.JwtUtils;
 import org.apache.commons.dbcp.BasicDataSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -24,14 +23,8 @@ import java.util.Map;
 @Service
 public class PassageController {
 
-
-    private String getUsername(String token){
-        if (JwtUtils.checkIsExpired(token) || !JwtUtils.checkIsValid(token)){
-            return "Invalid token";
-        }
-        Map<String, Object> userInfo = JwtUtils.getClaims(token);
-        return userInfo.get("username").toString();
-    }
+    @Autowired
+    JdbcTemplate targetdb = new JdbcTemplate();
 
     private String getUserID(String token){
         if (JwtUtils.checkIsExpired(token) || !JwtUtils.checkIsValid(token)){
@@ -51,44 +44,67 @@ public class PassageController {
         return dataSource;
     }
 
-
-    public Boolean createPassage(String userid, String title, String content){
+    @RequestMapping("/passage/createPassage")
+    public NewMessageClass createPassage(@RequestHeader("Authorization") String token, @RequestParam("title") String title, @RequestParam("content") String content){
         try{
-            String sql = String.format("insert into passagedb (title, authorid, date, visible, content) values ('%s', %s, '%s', %s, '%s')", title, userid, LocalDateTime.now(), 1, content);
-            JdbcTemplate targetdb = new JdbcTemplate(returnDataSource());
-            int affectRowNum = targetdb.update(sql);
-            return affectRowNum > 0;
+            String passageAuthorID = getUserID(token);
+            Date currentDate = new Date();
+            String sql = String.format("insert into passagedb (title, authorid, date, visible, content) values ('%s', %s, '%s', 1, '%s')", title, passageAuthorID, currentDate, content);
+            int affectRow = targetdb.update(sql);
+            if (affectRow > 0){
+                // get the passage id
+                return new NewMessageClass(HttpStatus.OK, "Passage upload successfully!");
+            }
+            return new NewMessageClass(HttpStatus.INTERNAL_SERVER_ERROR, "Database error");
         }
         catch (Exception e){
-            return false;
+            return new NewMessageClass(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error");
         }
-
     }
 
-    public Boolean modifyPassage(String title, String content, String passageID){
+    @RequestMapping("/passage/modifyPassage")
+    public NewMessageClass modifyPassage(@RequestParam("title") String title, @RequestParam("content") String content, @RequestParam("passageID") String passageID){
         try{
-            String sql = String.format("update passagedb set content='%s' title='%s' where passageid='%s'", content, title, passageID);
-            JdbcTemplate targetdb = new JdbcTemplate(returnDataSource());
-            int affectRowNum = targetdb.update(sql);
-            return affectRowNum > 0;
+            String sql = String.format("update passagedb set title='%s', content='%s' where id=%s", title, content, passageID);
+            int affectRows = targetdb.update(sql);
+            if (affectRows > 0){
+                return new NewMessageClass(HttpStatus.OK, "Passage updated successfully!");
+            }
+            return new NewMessageClass(HttpStatus.INTERNAL_SERVER_ERROR, "Database Error");
         }
         catch (Exception e){
-            return false;
+            return new NewMessageClass(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
         }
-
     }
 
-    public Boolean deletePassage(String id){
+    @RequestMapping("/passage/deletePassage")
+    public NewMessageClass deletePassage(@RequestParam("passageID") String id){
         try{
-            String sql = String.format("delete from passagedb where id='%s'", id);
-            JdbcTemplate targetdb = new JdbcTemplate(returnDataSource());
-            int affectRowNum = targetdb.update(sql);
-            return affectRowNum > 0;
+            String sql = String.format("delete from passagedb where id=%s", id);
+            int affectRows = targetdb.update(sql);
+            if (affectRows > 0){
+                return new NewMessageClass(HttpStatus.OK, "Passage deleted successfully");
+            }
+            return new NewMessageClass(HttpStatus.INTERNAL_SERVER_ERROR, "Database error");
         }
         catch (Exception e){
-            return false;
+            return new NewMessageClass(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
         }
+    }
 
+    @RequestMapping("/passage/changePassageStatus")
+    public NewMessageClass changePassageStatus(@RequestParam("passageID") String id, @RequestParam("status") Integer status){
+        try{
+            String sql = String.format("update passagedb set visible=%s where id=%s", status, id);
+            int affectRows = targetdb.update(sql);
+            if (affectRows > 0){
+                return new NewMessageClass(HttpStatus.OK, "Passage status changed successfully");
+            }
+            return new NewMessageClass(HttpStatus.INTERNAL_SERVER_ERROR, "Database Error");
+        }
+        catch (Exception e){
+            return new NewMessageClass(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
+        }
     }
 
     // Normal POST methods handlers
@@ -106,12 +122,16 @@ public class PassageController {
         }
     }
 
-    @RequestMapping("/passage/read/{passageID}")
-    public NewMessageClass getTargetPassage(@PathParam("passageID") String passageID){
+    @RequestMapping("/passage/getPassage/{passageID}")
+    public NewMessageClass getTargetPassage(@PathVariable("passageID") String passageID){
         try{
             String sql = String.format("select * from passagedb where id=%s", passageID);
             JdbcTemplate targetdb = new JdbcTemplate(returnDataSource());
             List<Map<String, Object>> result = targetdb.queryForList(sql);
+            // verify the validation
+            if (result.get(0).get("visible").toString().equals("0")){
+                return new NewMessageClass(HttpStatus.NOT_ACCEPTABLE, "This passage is not visible currently.");
+            }
             return new NewMessageClass(HttpStatus.OK, "Passage found", result.get(0));
         }
         catch (Exception e){

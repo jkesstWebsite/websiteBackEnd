@@ -1,11 +1,10 @@
 package jkas.jwt;
 
 import io.jsonwebtoken.*;
+import jkas.General.BaseConfig;
+import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class JwtUtils {
 
@@ -61,6 +60,21 @@ public class JwtUtils {
         catch (MalformedJwtException e){
             return false;
         }
+    }
+
+    public static Boolean checkIsBanned(String token){
+        Boolean isValid = checkIsValid(token);
+        if (!isValid){
+            return true;
+        }
+        Map<String, Object> tokenInfo = getClaims(token);
+        String sql = String.format("select status from userdb where username='%s'", tokenInfo.get("username").toString());
+        JdbcTemplate targetdb = new JdbcTemplate(BaseConfig.returnDataSource());
+        List<Map<String, Object>> userInfo = targetdb.queryForList(sql);
+        if (userInfo.get(0).get("status").toString().equals("0")){
+            return true;
+        }
+        return false;
     }
 
     public static Map<String, Object> getClaims(String token){

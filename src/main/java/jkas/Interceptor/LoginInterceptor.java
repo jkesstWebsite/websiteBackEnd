@@ -65,6 +65,15 @@ public class LoginInterceptor implements HandlerInterceptor {
             response.getWriter().append(generateRespondBody(HttpStatus.INTERNAL_SERVER_ERROR, "Invalid token"));
             return false;
         }
+
+        // verify the user status from the server
+        result = JwtUtils.checkIsBanned(token);
+        if (result){
+            System.out.println(" System blocked 1 illegal request");
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().append(generateRespondBody(HttpStatus.NOT_ACCEPTABLE, "Your account has already banned"));
+            return false;
+        }
         return true;
     }
 
