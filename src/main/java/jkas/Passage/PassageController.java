@@ -24,7 +24,7 @@ import java.util.Map;
 public class PassageController {
 
     @Autowired
-    JdbcTemplate targetdb = new JdbcTemplate();
+    JdbcTemplate targetdb = new JdbcTemplate(returnDataSource());
 
     private String getUserID(String token){
         if (JwtUtils.checkIsExpired(token) || !JwtUtils.checkIsValid(token)){
@@ -49,7 +49,7 @@ public class PassageController {
         try{
             String passageAuthorID = getUserID(token);
             Date currentDate = new Date();
-            String sql = String.format("insert into passagedb (title, authorid, date, visible, content) values ('%s', %s, '%s', 1, '%s')", title, passageAuthorID, currentDate, content);
+            String sql = String.format("insert into passagedb (title, authorid, date, visible, content) values ('%s', %s, '%s', 1, '%s')", title, passageAuthorID, LocalDateTime.now(), content);
             int affectRow = targetdb.update(sql);
             if (affectRow > 0){
                 // get the passage id
@@ -58,7 +58,7 @@ public class PassageController {
             return new NewMessageClass(HttpStatus.INTERNAL_SERVER_ERROR, "Database error");
         }
         catch (Exception e){
-            return new NewMessageClass(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error");
+            return new NewMessageClass(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", e.getMessage());
         }
     }
 
