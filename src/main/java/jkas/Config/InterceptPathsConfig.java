@@ -9,11 +9,13 @@ public class InterceptPathsConfig {
     // login interceptor paths configurations
     public static List<String> includePaths = Arrays.asList(
             "/user/**",
-            "/passage/editor/util"
+            "/passage/editor/util",
+            "/passage/**"
     );
     public static List<String> excludePaths = Arrays.asList(
             "/user/register",
-            "/user/login"
+            "/user/login",
+            "/passage/getPassage/**"
     );
 
 }

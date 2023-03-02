@@ -12,7 +12,8 @@ public class TokenPathsConfig {
     );
     public static List<String> excludePaths = Arrays.asList(
             "/user/login",
-            "/user/register"
+            "/user/register",
+            "/passage/getPassage"
     );
 
 
